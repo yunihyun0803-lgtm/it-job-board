@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IT 보안 채용 대시보드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #f4f6f9;
+    --surface:  #ffffff;
+    --surface2: #f9fafb;
+    --border:   #e2e6ed;
+    --border2:  #ccd3de;
+    --text1:    #111827;
+    --text2:    #4b5563;
+    --text3:    #9ca3af;
+    --blue:     #2563eb;
+    --blue-bg:  #eff6ff;
+    --blue-bd:  #bfdbfe;
+    --blue-txt: #1d4ed8;
+    --green:    #059669;
+    --green-bg: #ecfdf5;
+    --green-bd: #a7f3d0;
+    --green-txt:#065f46;
+    --amber:    #d97706;
+    --amber-bg: #fffbeb;
+    --amber-bd: #fde68a;
+    --red:      #dc2626;
+    --red-bg:   #fef2f2;
+    --red-bd:   #fecaca;
+    --red-txt:  #991b1b;
+    --purple:   #7c3aed;
+    --purple-bg:#f5f3ff;
+    --purple-bd:#ddd6fe;
+    --purple-txt:#5b21b6;
+    --radius:   8px;
+    --radius-lg:12px;
+    --shadow:   0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text1);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── 상단바 ── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: var(--shadow);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: var(--blue);
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: #fff; letter-spacing: -0.5px;
+  }
+  .logo-text  { font-size: 15px; font-weight: 700; color: var(--text1); }
+  .logo-sub   { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .pill {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 11px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; border: 1px solid;
+  }
+  .pill-green { background: var(--green-bg); border-color: var(--green-bd); color: var(--green-txt); }
+  .pill-blue  { background: var(--blue-bg);  border-color: var(--blue-bd);  color: var(--blue-txt); }
+  .live-dot   { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  #syncTime   { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+
+  /* ── 레이아웃 ── */
+  .layout { display: flex; min-height: calc(100vh - 56px); }
+
+  /* ── 사이드바 ── */
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 12px;
+    display: flex; flex-direction: column; gap: 24px;
+    position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto;
+  }
+  .sb-section-lbl {
+    font-size: 10px; font-weight: 700; color: var(--text3);
+    letter-spacing: .1em; text-transform: uppercase;
+    padding: 0 6px; margin-bottom: 4px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 500; color: var(--text2);
+    border: 1px solid transparent; cursor: pointer;
+    transition: all .12s;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text1); }
+  .nav-item.active {
+    background: var(--blue-bg); color: var(--blue-txt);
+    border-color: var(--blue-bd); font-weight: 600;
+  }
+  .nav-cnt {
+    margin-left: auto; padding: 1px 7px; border-radius: 10px;
+    background: var(--bg); color: var(--text3); font-size: 11px;
+  }
+  .nav-item.active .nav-cnt { background: var(--blue-bg); color: var(--blue-txt); }
+
+  .bar-block {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .bar-row { display: flex; flex-direction: column; gap: 4px; }
+  .bar-top  { display: flex; justify-content: space-between; align-items: center; }
+  .bar-lbl  { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .bar-val  { font-size: 12px; font-weight: 700; }
+  .bar-track { height: 4px; background: var(--border); border-radius: 2px; }
+  .bar-fill  { height: 100%; border-radius: 2px; transition: width .5s ease; }
+
+  /* ── 콘텐츠 ── */
+  .content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  /* 통계 바 */
+  .stat-bar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 16px 24px; display: flex; gap: 0;
+  }
+  .stat-card {
+    flex: 1; padding: 8px 20px; border-right: 1px solid var(--border);
+  }
+  .stat-card:last-child { border-right: none; }
+  .stat-num { font-size: 26px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .stat-lbl { font-size: 11px; color: var(--text3); font-weight: 500; margin-top: 4px; }
+  .stat-sub { font-size: 11px; font-weight: 600; margin-top: 3px; }
+  .c-blue   { color: var(--blue); }
+  .c-green  { color: var(--green); }
+  .c-amber  { color: var(--amber); }
+  .c-red    { color: var(--red); }
+  .c-purple { color: var(--purple); }
+  .up   { color: var(--green); }
+  .down { color: var(--red); }
+  .neu  { color: var(--text3); }
+
+  /* 검색/필터 바 */
+  .filter-bar {
+    background: var(--surface2); border-bottom: 1px solid var(--border);
+    padding: 12px 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .search-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 6px 12px; flex: 0 0 220px;
+  }
+  .search-wrap:focus-within { border-color: var(--blue); }
+  .search-icon { font-size: 14px; color: var(--text3); }
+  .search-wrap input {
+    border: none; outline: none; background: transparent;
+    font-size: 13px; color: var(--text1); font-family: inherit; width: 100%;
+  }
+  .f-sep  { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+  .f-lbl  { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+  .chip {
+    padding: 5px 13px; border-radius: 20px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    color: var(--text2); font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all .12s; white-space: nowrap; font-family: inherit;
+  }
+  .chip:hover { border-color: var(--blue); color: var(--blue-txt); }
+  .chip.on { background: var(--blue-bg); border-color: var(--blue); color: var(--blue-txt); font-weight: 700; }
+
+  /* 툴바 (결과수 + 정렬) */
+  .toolbar {
+    padding: 12px 24px 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .result-cnt { font-size: 13px; color: var(--text2); font-weight: 500; }
+  .result-cnt b { color: var(--text1); font-weight: 700; }
+  .sort-sel {
+    background: var(--surface); border: 1px solid var(--border2);
+    color: var(--text2); padding: 6px 12px; border-radius: var(--radius);
+    font-size: 12px; font-family: inherit; cursor: pointer;
+  }
+  .sort-sel:focus { outline: none; border-color: var(--blue); }
+
+  /* 컬럼 헤더 */
+  .col-hdr {
+    display: grid;
+    grid-template-columns: minmax(0,1.8fr) minmax(0,2.5fr) 90px 100px 75px 90px;
+    gap: 12px; padding: 0 16px 6px 16px; margin: 0 24px;
+  }
+  .ch {
+    font-size: 10px; font-weight: 700; color: var(--text3);
+    letter-spacing: .08em; text-transform: uppercase;
+  }
+  .ch.r { text-align: right; }
+
+  /* 공고 목록 */
+  .job-list { padding: 0 24px 24px; display: flex; flex-direction: column; gap: 6px; }
+
+  .job-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg); padding: 14px 16px;
+    display: grid;
+    grid-template-columns: minmax(0,1.8fr) minmax(0,2.5fr) 90px 100px 75px 90px;
+    gap: 12px; align-items: center;
+    cursor: pointer; transition: border-color .12s, background .12s;
+    box-shadow: var(--shadow);
+    text-decoration: none; color: inherit;
+  }
+  .job-card:hover { border-color: var(--blue-bd); background: #fafbff; }
+  .job-card.urgent { border-left: 4px solid var(--red); border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+  .job-card.isnew  { border-left: 4px solid var(--blue); border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+
+  .co-wrap { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .co-logo {
+    width: 36px; height: 36px; border-radius: var(--radius);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .co-name { font-size: 13px; font-weight: 700; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .co-src  { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+  .pos-title { font-size: 13px; font-weight: 600; color: var(--text1); line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .tags { display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+  .tag {
+    font-size: 10px; font-weight: 700; padding: 2px 7px;
+    border-radius: 4px; border: 1.5px solid; letter-spacing: .02em;
+  }
+  .t-sec  { background: var(--green-bg);  color: var(--green-txt); border-color: var(--green-bd); }
+  .t-dev  { background: var(--blue-bg);   color: var(--blue-txt);  border-color: var(--blue-bd); }
+  .t-inf  { background: var(--amber-bg);  color: var(--amber);     border-color: var(--amber-bd); }
+  .t-ai   { background: var(--purple-bg); color: var(--purple-txt);border-color: var(--purple-bd); }
+  .t-hot  { background: var(--red-bg);    color: var(--red-txt);   border-color: var(--red-bd); }
+  .t-new  { background: var(--blue-bg);   color: var(--blue-txt);  border-color: var(--blue-bd); }
+  .t-gray { background: var(--surface2);  color: var(--text3);     border-color: var(--border); }
+
+  .exp-cell { font-size: 13px; font-weight: 500; color: var(--text2); }
+  .loc-cell { font-size: 12px; color: var(--text2); }
+
+  .dl-wrap   { text-align: right; }
+  .dl-num    { font-size: 14px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .dl-date   { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+  .act-btn {
+    display: block; width: 100%; padding: 7px 0; border-radius: var(--radius);
+    font-size: 12px; font-weight: 700; cursor: pointer; text-align: center;
+    border: 1.5px solid; transition: all .12s; font-family: inherit; text-decoration: none;
+  }
+  .btn-go   { background: var(--blue-bg); color: var(--blue-txt); border-color: var(--blue-bd); }
+  .btn-go:hover { background: var(--blue); color: #fff; }
+  .btn-saved { background: var(--green-bg); color: var(--green-txt); border-color: var(--green-bd); }
+
+  /* 상태 화면들 */
+  .state-box { padding: 60px 20px; text-align: center; color: var(--text3); }
+  .state-icon { font-size: 36px; display: block; margin-bottom: 14px; }
+  .state-title { font-size: 15px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+  .state-sub { font-size: 13px; }
+  .error-box {
+    margin: 12px 24px; padding: 14px 18px;
+    background: var(--red-bg); border: 1px solid var(--red-bd);
+    border-radius: var(--radius-lg); font-size: 13px; font-weight: 500; color: var(--red-txt);
+  }
+
+  /* 하단바 */
+  .footer {
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 10px 24px; display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; color: var(--text3); margin-top: auto;
+  }
+  .src-badges { display: flex; gap: 6px; }
+  .src-badge {
+    padding: 3px 9px; border-radius: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    font-size: 11px; font-weight: 600; color: var(--text2);
+  }
+
+  /* 스피너 */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 28px; height: 28px; border: 3px solid var(--border2);
+    border-top-color: var(--blue); border-radius: 50%;
+    animation: spin .8s linear infinite; margin: 0 auto 14px;
+  }
+
+  /* 반응형 */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .stat-bar { flex-wrap: wrap; }
+    .col-hdr { display: none; }
+    .job-card { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 상단바 -->
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-icon">IT<br>JOB</div>
+    <div>
+      <div class="logo-text">IT 보안 채용 대시보드</div>
+      <div class="logo-sub">사람인 · 원티드 · 잡플래닛 통합</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="pill pill-green"><div class="live-dot"></div>자동 업데이트</div>
+    <div class="pill pill-blue" id="totalBadge">불러오는 중...</div>
+    <span id="syncTime">—</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- 사이드바 -->
+  <aside class="sidebar">
+    <div>
+      <div class="sb-section-lbl">메뉴</div>
+      <div class="nav-item active" onclick="setNav(this,'all')">
+        <span>◉</span> 전체 공고 <span class="nav-cnt" id="navAll">0</span>
+      </div>
+      <div class="nav-item" onclick="setNav(this,'saved')">
+        <span>★</span> 저장 목록 <span class="nav-cnt" id="navSaved">0</span>
+      </div>
+      <div class="nav-item" onclick="setNav(this,'urgent')">
+        <span>⏰</span> 마감 임박 <span class="nav-cnt" id="navUrgent">0</span>
+      </div>
+    </div>
+    <div>
+      <div class="sb-section-lbl">직군 분포</div>
+      <div class="bar-block" id="barBlock">
+        <div class="state-sub" style="text-align:center;padding:8px 0">로딩 중...</div>
+      </div>
+    </div>
+    <div>
+      <div class="sb-section-lbl">수집 소스</div>
+      <div class="nav-item"><span style="color:#e60026">●</span> 사람인</div>
+      <div class="nav-item"><span style="color:#00c4a7">●</span> 원티드</div>
+      <div class="nav-item"><span style="color:#356ae7">●</span> 잡플래닛</div>
+    </div>
+  </aside>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="content">
+
+    <!-- 통계 바 -->
+    <div class="stat-bar">
+      <div class="stat-card">
+        <div class="stat-num c-blue" id="sTotal">—</div>
+        <div class="stat-lbl">전체 공고</div>
+        <div class="stat-sub neu" id="sTotalSub">로딩 중</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num c-green" id="sSec">—</div>
+        <div class="stat-lbl">보안</div>
+        <div class="stat-sub neu" id="sSecSub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num c-blue" id="sDev">—</div>
+        <div class="stat-lbl">개발</div>
+        <div class="stat-sub neu" id="sDevSub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num c-amber" id="sInf">—</div>
+        <div class="stat-lbl">인프라</div>
+        <div class="stat-sub neu" id="sInfSub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num c-red" id="sUrgent">—</div>
+        <div class="stat-lbl">마감 7일 이내</div>
+        <div class="stat-sub neu" id="sUrgentSub">—</div>
+      </div>
+    </div>
+
+    <!-- 검색/필터 -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="회사명, 포지션 검색..." oninput="render()">
+      </div>
+      <div class="f-sep"></div>
+      <span class="f-lbl">직군</span>
+      <button class="chip on" onclick="setCat(this,'all')">전체</button>
+      <button class="chip" onclick="setCat(this,'sec')">🔒 보안</button>
+      <button class="chip" onclick="setCat(this,'dev')">⌨ 개발</button>
+      <button class="chip" onclick="setCat(this,'inf')">⚙ 인프라</button>
+      <div class="f-sep"></div>
+      <span class="f-lbl">경력</span>
+      <button class="chip on" onclick="setExp(this,'all')">전체</button>
+      <button class="chip" onclick="setExp(this,'0')">신입</button>
+      <button class="chip" onclick="setExp(this,'3')">3년+</button>
+      <button class="chip" onclick="setExp(this,'5')">5년+</button>
+    </div>
+
+    <!-- 툴바 -->
+    <div class="toolbar">
+      <span class="result-cnt" id="resultCnt">공고를 불러오는 중입니다...</span>
+      <select class="sort-sel" id="sortSel" onchange="render()">
+        <option value="deadline">⏱ 마감 임박순</option>
+        <option value="newest">🆕 최신 등록순</option>
+        <option value="company">🏢 회사명순</option>
+      </select>
+    </div>
+
+    <!-- 컬럼 헤더 -->
+    <div class="col-hdr">
+      <div class="ch">회사</div>
+      <div class="ch">채용 포지션</div>
+      <div class="ch">경력</div>
+      <div class="ch">근무지</div>
+      <div class="ch r">마감일</div>
+      <div class="ch r">지원</div>
+    </div>
+
+    <!-- 공고 목록 -->
+    <div class="job-list" id="jobList">
+      <div class="state-box">
+        <div class="spinner"></div>
+        <div class="state-title">데이터를 불러오는 중입니다</div>
+        <div class="state-sub">jobs.json 파일을 읽고 있어요...</div>
+      </div>
+    </div>
+
+    <!-- 하단바 -->
+    <footer class="footer">
+      <div class="src-badges">
+        <span class="src-badge">📡 사람인 OpenAPI</span>
+        <span class="src-badge">🤖 GitHub Actions 자동화</span>
+      </div>
+      <span id="footerInfo">—</span>
+      <span id="footerUpdated">—</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+// ── 상태 ──────────────────────────────────────────────
+let ALL_JOBS  = [];
+let catFilter = 'all';
+let expFilter = 'all';
+let navMode   = 'all';
+let saved     = new Set(JSON.parse(localStorage.getItem('saved_jobs') || '[]'));
+
+// ── 직군 분류 키워드 ───────────────────────────────────
+const CAT_KW = {
+  sec: ['보안','security','침투','모의해킹','취약점','soc','siem','isms','악성코드',
+        'forensic','포렌식','firewall','방화벽','암호화','컴플라이언스','secops','devsecops'],
+  dev: ['개발','developer','engineer','backend','frontend','fullstack','java','python',
+        'golang','node','react','spring','kotlin','ios','android','소프트웨어'],
+  inf: ['인프라','infrastructure','devops','kubernetes','k8s','docker','aws','gcp',
+        'azure','cloud','클라우드','네트워크','network','시스템','linux','sre'],
+};
+function classify(j) {
+  const txt = `${j.company} ${j.position} ${j.keyword||''} ${j.tags||''}`.toLowerCase();
+  for (const [cat, kws] of Object.entries(CAT_KW))
+    if (kws.some(k => txt.includes(k))) return cat;
+  return 'dev';
+}
+
+// ── 날짜 유틸 ──────────────────────────────────────────
+function daysLeft(expireStr) {
+  if (!expireStr) return 999;
+  try {
+    const exp = new Date(expireStr.replace(/\./g,'-'));
+    return Math.ceil((exp - new Date()) / 86400000);
+  } catch { return 999; }
+}
+function dlColor(d) {
+  if (d <= 0)  return 'var(--text3)';
+  if (d <= 3)  return 'var(--red)';
+  if (d <= 7)  return 'var(--amber)';
+  if (d <= 14) return 'var(--blue)';
+  return 'var(--text2)';
+}
+function dlText(d) {
+  if (d <= 0) return '마감';
+  if (d === 999) return '상시';
+  return 'D-' + d;
+}
+
+// ── jobs.json 로드 ─────────────────────────────────────
+async function loadJobs() {
+  try {
+    // 개발 환경에서 jobs.json이 없으면 목 데이터 사용
+    let data;
+    try {
+      const res = await fetch('jobs.json?t=' + Date.now());
+      if (!res.ok) throw new Error('파일 없음');
+      data = await res.json();
+    } catch {
+      data = getMockData();
+    }
+
+    ALL_JOBS = (data.jobs || data).map(j => ({
+      ...j,
+      cat: j.cat || classify(j),
+      dl:  daysLeft(j.expire_date || j.expireDate),
+    }));
+
+    // 동기화 시각 표시
+    const syncTs = data.updated_at || data.crawled_at || new Date().toISOString();
+    document.getElementById('syncTime').textContent =
+      '갱신: ' + new Date(syncTs).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+
+    updateStats();
+    render();
+  } catch (e) {
+    document.getElementById('jobList').innerHTML =
+      `<div class="error-box">⚠ 데이터 로드 오류: ${e.message}<br><small>jobs.json 파일이 같은 폴더에 있는지 확인하세요.</small></div>`;
+  }
+}
+
+// ── 목 데이터 (jobs.json 없을 때 폴백) ────────────────
+function getMockData() {
+  return { updated_at: new Date().toISOString(), jobs: [
+    { id:'1', company:'카카오', position:'Application Security Engineer', experience:'5년+', exp_min:5, location:'판교', expire_date:'2025-04-25', post_date:'2025-04-10', url:'#', source:'사람인', keyword:'보안 AppSec' },
+    { id:'2', company:'네이버', position:'보안 취약점 연구원 (화이트햇)', experience:'3-7년', exp_min:3, location:'분당', expire_date:'2025-05-02', post_date:'2025-04-18', url:'#', source:'원티드', keyword:'침투 모의해킹' },
+    { id:'3', company:'SK쉴더스', position:'SOC 분석가 L2/L3', experience:'3년+', exp_min:3, location:'을지로', expire_date:'2025-05-10', post_date:'2025-04-12', url:'#', source:'사람인', keyword:'보안관제 SOC SIEM' },
+    { id:'4', company:'라인플러스', position:'Security Software Engineer (Golang)', experience:'5년+', exp_min:5, location:'신촌', expire_date:'2025-04-28', post_date:'2025-04-17', url:'#', source:'잡플래닛', keyword:'보안 개발자' },
+    { id:'5', company:'삼성SDS', position:'클라우드 보안 아키텍트 (AWS/GCP)', experience:'7년+', exp_min:7, location:'잠실', expire_date:'2025-04-24', post_date:'2025-04-08', url:'#', source:'사람인', keyword:'클라우드 보안 인프라' },
+    { id:'6', company:'쿠팡', position:'Security Data Engineer (ML Pipeline)', experience:'4년+', exp_min:4, location:'잠실', expire_date:'2025-05-15', post_date:'2025-04-05', url:'#', source:'원티드', keyword:'보안 개발자 AI' },
+    { id:'7', company:'크래프톤', position:'게임 보안 연구원 (리버싱/안티치트)', experience:'3년+', exp_min:3, location:'강남', expire_date:'2025-05-20', post_date:'2025-04-19', url:'#', source:'사람인', keyword:'보안 리버싱' },
+    { id:'8', company:'카카오뱅크', position:'정보보호 담당자 (ISMS-P)', experience:'5년+', exp_min:5, location:'판교', expire_date:'2025-04-23', post_date:'2025-04-09', url:'#', source:'잡플래닛', keyword:'보안 컴플라이언스' },
+    { id:'9', company:'토스', position:'iOS Security Engineer', experience:'신입-3년', exp_min:0, location:'강남', expire_date:'2025-05-08', post_date:'2025-04-15', url:'#', source:'원티드', keyword:'보안 개발자 ios' },
+    { id:'10', company:'LG CNS', position:'Zero Trust Network 보안 설계자', experience:'8년+', exp_min:8, location:'마곡', expire_date:'2025-05-25', post_date:'2025-04-02', url:'#', source:'사람인', keyword:'보안 네트워크 인프라' },
+    { id:'11', company:'현대오토에버', position:'차량 사이버보안 엔지니어 (ISO 21434)', experience:'3년+', exp_min:3, location:'양재', expire_date:'2025-05-12', post_date:'2025-04-11', url:'#', source:'사람인', keyword:'보안 자동차' },
+    { id:'12', company:'넥슨코리아', position:'백엔드 개발자 (보안팀)', experience:'3년+', exp_min:3, location:'성수', expire_date:'2025-05-05', post_date:'2025-04-14', url:'#', source:'원티드', keyword:'개발 backend 보안' },
+    { id:'13', company:'당근마켓', position:'DevSecOps Engineer', experience:'4년+', exp_min:4, location:'역삼', expire_date:'2025-05-18', post_date:'2025-04-16', url:'#', source:'원티드', keyword:'DevSecOps 인프라 보안' },
+    { id:'14', company:'하이브', position:'정보보안 팀장', experience:'10년+', exp_min:10, location:'용산', expire_date:'2025-06-01', post_date:'2025-04-01', url:'#', source:'잡플래닛', keyword:'보안 관리자' },
+    { id:'15', company:'배달의민족', position:'클라우드 보안 엔지니어 (K8s)', experience:'5년+', exp_min:5, location:'송파', expire_date:'2025-05-22', post_date:'2025-04-13', url:'#', source:'사람인', keyword:'클라우드 보안 kubernetes' },
+  ]};
+}
+
+// ── 통계 업데이트 ─────────────────────────────────────
+function updateStats() {
+  const sec = ALL_JOBS.filter(j => j.cat==='sec').length;
+  const dev = ALL_JOBS.filter(j => j.cat==='dev').length;
+  const inf = ALL_JOBS.filter(j => j.cat==='inf').length;
+  const urg = ALL_JOBS.filter(j => j.dl > 0 && j.dl <= 7).length;
+  const tot = ALL_JOBS.length;
+
+  document.getElementById('sTotal').textContent  = tot;
+  document.getElementById('sSec').textContent    = sec;
+  document.getElementById('sDev').textContent    = dev;
+  document.getElementById('sInf').textContent    = inf;
+  document.getElementById('sUrgent').textContent = urg;
+  document.getElementById('sTotalSub').textContent  = '전체';
+  document.getElementById('sSecSub').textContent    = '보안 직군';
+  document.getElementById('sDevSub').textContent    = '개발 직군';
+  document.getElementById('sInfSub').textContent    = '인프라 직군';
+  document.getElementById('sUrgentSub').textContent = '마감 임박';
+  document.getElementById('navAll').textContent    = tot;
+  document.getElementById('navUrgent').textContent = urg;
+  document.getElementById('totalBadge').textContent = tot + '건';
+  document.getElementById('footerInfo').textContent = `총 ${tot}개 공고`;
+
+  const maxV = Math.max(sec, dev, inf, 1);
+  document.getElementById('barBlock').innerHTML = `
+    <div class="bar-row"><div class="bar-top"><span class="bar-lbl">보안</span><span class="bar-val" style="color:var(--green)">${sec}건</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(sec/maxV*100)}%;background:var(--green)"></div></div></div>
+    <div class="bar-row"><div class="bar-top"><span class="bar-lbl">개발</span><span class="bar-val" style="color:var(--blue)">${dev}건</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(dev/maxV*100)}%;background:var(--blue)"></div></div></div>
+    <div class="bar-row"><div class="bar-top"><span class="bar-lbl">인프라</span><span class="bar-val" style="color:var(--amber)">${inf}건</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(inf/maxV*100)}%;background:var(--amber)"></div></div></div>
+  `;
+}
+
+// ── 렌더링 ─────────────────────────────────────────────
+function render() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  let list = [...ALL_JOBS];
+
+  // 네비 모드
+  if (navMode === 'saved')  list = list.filter(j => saved.has(j.id));
+  if (navMode === 'urgent') list = list.filter(j => j.dl > 0 && j.dl <= 7);
+
+  // 필터
+  if (catFilter !== 'all') list = list.filter(j => j.cat === catFilter);
+  if (expFilter === '0')   list = list.filter(j => (j.exp_min||0) === 0 || (j.experience||'').includes('신입'));
+  if (expFilter === '3')   list = list.filter(j => (j.exp_min||0) >= 3);
+  if (expFilter === '5')   list = list.filter(j => (j.exp_min||0) >= 5);
+  if (q) list = list.filter(j =>
+    (j.company||'').toLowerCase().includes(q) ||
+    (j.position||'').toLowerCase().includes(q) ||
+    (j.keyword||'').toLowerCase().includes(q)
+  );
+
+  // 정렬
+  const sort = document.getElementById('sortSel').value;
+  if (sort === 'deadline') list.sort((a,b) => a.dl - b.dl);
+  else if (sort === 'newest') list.sort((a,b) => (b.post_date||'') > (a.post_date||'') ? 1 : -1);
+  else if (sort === 'company') list.sort((a,b) => (a.company||'').localeCompare(b.company||''));
+
+  document.getElementById('resultCnt').innerHTML = `<b>${list.length}건</b>의 공고${q ? ` — "${q}" 검색 결과` : ''}`;
+  document.getElementById('navSaved').textContent = saved.size;
+
+  const container = document.getElementById('jobList');
+  if (list.length === 0) {
+    container.innerHTML = `<div class="state-box"><span class="state-icon">🔍</span><div class="state-title">조건에 맞는 공고가 없습니다</div><div class="state-sub">필터나 검색어를 변경해보세요</div></div>`;
+    return;
+  }
+
+  const COLORS = ['#2563eb','#059669','#7c3aed','#d97706','#dc2626','#0891b2','#be185d','#b45309'];
+  container.innerHTML = list.map(j => {
+    const d   = j.dl;
+    const clr = dlColor(d);
+    const ini = (j.company||'?').slice(0,2);
+    const bg  = COLORS[(j.company||'').charCodeAt(0) % COLORS.length];
+    const catTag = j.cat==='sec' ? '<span class="tag t-sec">보안</span>'
+                 : j.cat==='inf' ? '<span class="tag t-inf">인프라</span>'
+                 : '<span class="tag t-dev">개발</span>';
+    const urgTag = (d > 0 && d <= 5)  ? '<span class="tag t-hot">마감임박</span>' : '';
+    const srcTag = `<span class="tag t-gray">${j.source||'사람인'}</span>`;
+    const savedCls = saved.has(j.id) ? 'btn-saved' : 'btn-go';
+    const savedTxt = saved.has(j.id) ? '★ 저장됨'  : '지원하기 →';
+    const cardCls = (d > 0 && d <= 5) ? ' urgent' : (d > 30 ? ' isnew' : '');
+    return `<a class="job-card${cardCls}" href="${j.url||'#'}" target="_blank" rel="noopener"
+        onclick="handleClick(event,'${j.id}','${(j.url||'#').replace(/'/g,'')}')" >
+      <div class="co-wrap">
+        <div class="co-logo" style="background:${bg};color:#fff">${ini}</div>
+        <div>
+          <div class="co-name">${j.company||'—'}</div>
+          <div class="co-src">${j.location||'—'}</div>
+        </div>
+      </div>
+      <div>
+        <div class="pos-title">${j.position||'—'}</div>
+        <div class="tags">${catTag}${urgTag}${srcTag}</div>
+      </div>
+      <div class="exp-cell">${j.experience||'경력무관'}</div>
+      <div class="loc-cell">${(j.location||'—').split(' ')[0]}</div>
+      <div class="dl-wrap">
+        <div class="dl-num" style="color:${clr}">${dlText(d)}</div>
+        <div class="dl-date">${j.expire_date||'상시'}</div>
+      </div>
+      <div>
+        <button class="act-btn ${savedCls}" id="save-${j.id}"
+          onclick="toggleSave(event,'${j.id}')">${savedTxt}</button>
+      </div>
+    </a>`;
+  }).join('');
+  document.getElementById('footerUpdated').textContent =
+    new Date().toLocaleTimeString('ko-KR') + ' 렌더링';
+}
+
+// ── 이벤트 핸들러 ─────────────────────────────────────
+function handleClick(e, id, url) {
+  if (e.target.classList.contains('act-btn')) e.preventDefault();
+}
+function toggleSave(e, id) {
+  e.preventDefault(); e.stopPropagation();
+  if (saved.has(id)) saved.delete(id);
+  else saved.add(id);
+  localStorage.setItem('saved_jobs', JSON.stringify([...saved]));
+  const btn = document.getElementById('save-' + id);
+  if (btn) {
+    btn.className = 'act-btn ' + (saved.has(id) ? 'btn-saved' : 'btn-go');
+    btn.textContent = saved.has(id) ? '★ 저장됨' : '지원하기 →';
+  }
+  document.getElementById('navSaved').textContent = saved.size;
+}
+function setCat(el, val) {
+  document.querySelectorAll('.filter-bar .chip').forEach((c,i) => { if(i<4) c.classList.remove('on'); });
+  el.classList.add('on'); catFilter = val; render();
+}
+function setExp(el, val) {
+  const chips = document.querySelectorAll('.filter-bar .chip');
+  [4,5,6,7].forEach(i => chips[i] && chips[i].classList.remove('on'));
+  el.classList.add('on'); expFilter = val; render();
+}
+function setNav(el, mode) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active'); navMode = mode; render();
+}
+
+// ── 초기화 ─────────────────────────────────────────────
+loadJobs();
+</script>
+</body>
+</html>
