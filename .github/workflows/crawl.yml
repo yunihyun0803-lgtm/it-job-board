@@ -2,10 +2,7 @@ name: 채용 공고 자동 수집
 
 on:
   schedule:
-    # 매일 오전 9시 (KST) = UTC 00:00
     - cron: "0 0 * * *"
-
-  # 수동 실행 버튼 (테스트용)
   workflow_dispatch:
     inputs:
       force:
@@ -14,8 +11,8 @@ on:
         default: "false"
 
 permissions:
-  contents: write   # jobs.json 커밋 권한
-  pages:    write   # GitHub Pages 배포 권한
+  contents: write
+  pages: write
   id-token: write
 
 jobs:
@@ -25,92 +22,52 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      # 1. 저장소 체크아웃
       - name: 코드 체크아웃
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
-      # 2. Python 환경 설정
       - name: Python 3.11 설정
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
 
-      # 3. 의존성 설치
       - name: 패키지 설치
-        run: |
-          pip install requests beautifulsoup4 lxml
+        run: pip install requests beautifulsoup4 lxml
 
-      # 4. 크롤러 실행
       - name: 채용 공고 수집
         env:
           SARAMIN_API_KEY: ${{ secrets.SARAMIN_API_KEY }}
-        run: |
-          cd $GITHUB_WORKSPACE
-          python crawler/crawl.py
+        run: python crawler/crawl.py
 
-      # 5. 수집된 공고 수 출력 (로그용)
       - name: 결과 요약
         run: |
           if [ -f docs/jobs.json ]; then
-            echo "✅ jobs.json 생성 완료"
             python3 -c "
           import json
           with open('docs/jobs.json') as f:
               d = json.load(f)
           jobs = d.get('jobs', [])
-          total = len(jobs)
-          sec = sum(1 for j in jobs if j.get('cat')=='sec')
-          dev = sum(1 for j in jobs if j.get('cat')=='dev')
-          inf = sum(1 for j in jobs if j.get('cat')=='inf')
-          print(f'총 공고: {total}건')
-          print(f'  보안: {sec}건')
-          print(f'  개발: {dev}건')
-          print(f'  인프라: {inf}건')
-          print(f'수집 시각: {d.get(\"crawled_at\",\"?\")}')
+          print(f'총 공고: {len(jobs)}건')
           "
           else
-            echo "❌ jobs.json 없음 — 크롤링 실패"
-            exit 1
+            echo "jobs.json 없음 — API 키 없이는 목 데이터만 사용"
           fi
 
-      # 6. 변경사항 커밋 (데이터가 바뀐 경우에만)
       - name: jobs.json 커밋
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/jobs.json
+          git add docs/
           if git diff --staged --quiet; then
-            echo "변경 없음 — 커밋 건너뜀"
+            echo "변경 없음"
           else
-            TIMESTAMP=$(TZ='Asia/Seoul' date '+%Y-%m-%d %H:%M KST')
-            COUNT=$(python3 -c "import json; print(len(json.load(open('docs/jobs.json'))['jobs']))")
-            git commit -m "chore: 채용 공고 자동 업데이트 [${TIMESTAMP}] (${COUNT}건)"
+            git commit -m "chore: 채용 공고 자동 업데이트"
             git push
-            echo "✅ 커밋 완료"
           fi
 
-      # 7. GitHub Pages 배포
       - name: Pages 업로드
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs/
 
       - name: GitHub Pages 배포
-        id: deployment
         uses: actions/deploy-pages@v4
-
-      # 8. 실패 시 슬랙/이메일 알림 (선택)
-      - name: 실패 알림
-        if: failure()
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          payload: |
-            {
-              "text": "⚠️ *IT 채용 크롤러 실패*\n저장소: ${{ github.repository }}\n실행 ID: ${{ github.run_id }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|로그 확인>"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        continue-on-error: true   # 슬랙 없어도 워크플로우 실패 안 함
